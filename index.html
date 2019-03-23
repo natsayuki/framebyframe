@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>Fram By Frame</title>
+    <link rel="stylesheet" href="/style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.1/css/all.css" integrity="sha384-5sAR7xN1Nv6T6+dT2mhtzEpVJvfS3NScPQTrOxhwjIuvcA67KV2R5Jz6kr4abQsz" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,400italic|Material+Icons">
+    <link rel="stylesheet" href="https://unpkg.com/vue-material@beta/dist/vue-material.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/vue-material@beta/dist/theme/default.css">
+    <meta name="viewport" content="width=.8, initial-scale=.8, maximum-scale=.8, user-scalable=0">
+  </head>
+  <body>
+    <div id="app">
+      <div v-if="screen == 'home'" class="fullscreen column">
+        <md-button class="md-accent topleft" @click="createRoom()">CREATE ROOM</md-button>
+        <form class="column">
+          <h1>Room Code</h1>
+          <input class="biginput" maxlength="8" />
+          <md-button class="md-raised md-primary">JOIN</md-button>
+        </form>
+      </div>
+      <div v-if="screen == 'name'" class="fullscreen column">
+        <h1>Pick A Name</h1>
+        <form class="column" @submit.prevent="sendName()">
+          <input class="biginput" v-model="name" />
+          <md-button class="md-raised md-primary" @click="sendName()">ENTER</md-button>
+        </form>
+      </div>
+      <div v-if="screen == 'lobby'" class="fullscreen column">
+        <h1 class="topleft">{{roomCode}}</h1>
+        <div class="list row">
+          <h1 v-for="player in players" class="name">{{player}}</h1>
+        </div>
+        <md-button class="md-raised md-primary" v-if="leader" @click="startGame()">START</md-button>
+      </div>
+      <div v-if="screen == 'observing'">
+        <h1 class="topleft">{{drawer}} {{time}}</h1>
+      </div>
+      <div v-if="screen == 'playing'">
+
+      </div>
+      <md-snackbar :md-duration="Infinity" :md-active.sync="showSnack">
+        <span>{{snackMessage}}</span>
+        <md-button class="md-accent" @click="showSnack = false">DISMISS</md-button>
+      </md-snackbar>
+    </div>
+    <script src="socket.io/socket.io.js"></script>
+    <script src="https://unpkg.com/vue"></script>
+    <script src="https://unpkg.com/vue-material@beta"></script>
+    <script src="script.js"></script>
+  </body>
+</html>

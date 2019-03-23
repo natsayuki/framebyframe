@@ -1,0 +1,36 @@
+.row, .column, .fullscreen{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.row{
+  flex-direction: row !important;
+}
+.fullscreen{
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  background-color: white;
+}
+.biginput{
+  transform: scale(2.4);
+  margin: 1rem;
+  text-align: center;
+}
+.topleft{
+  position: fixed !important;
+  top: 1rem;
+  left: 2rem;
+  transform: scale(1.5);
+}
+.list{
+  flex-wrap: wrap;
+  width: 100%;
+  height: 60%;
+}
+.name{
+  margin: 1rem;
+}
