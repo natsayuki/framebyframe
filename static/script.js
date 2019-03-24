@@ -18,6 +18,10 @@ let data ={
   tool: 'pencil',
   pixels: [],
   clicking: false,
+  author: '',
+  leaderIn: false,
+  rounds: 3,
+  turn: 30,
 }
 
 let methods = {
@@ -43,7 +47,7 @@ let methods = {
     data.players.pop(name);
   },
   startGame(){
-    socket.emit('startGame', {});
+    socket.emit('startGame', {leaderIn: data.leaderIn, rounds: data.rounds, turn: data.turn});
   },
   handlePixel(coord,type){
     if(data.turn && (data.clicking || type=='c') && data.tool == 'pencil') socket.emit('pixelAdd',coord);
@@ -55,7 +59,19 @@ let methods = {
         document.querySelector(`#x${x}x${y}`).style.backgroundColor = 'rgba(255,255,255,0)';
       }
     }
-  }
+  },
+  animate(frames){
+    frames = frames.slice(1, frames.length);
+    let time = 0;
+    setInterval(() => {
+      methods.clearGrid();
+      data.author = frames[time%frames.length].name;
+      frames[time%frames.length].frames.forEach(pixel => {
+        document.querySelector(`#x${pixel[0]}x${pixel[1]}`).style.backgroundColor = 'black';
+      });
+      time++;
+    }, 200);
+  },
 }
 
 let computed = {
@@ -132,7 +148,11 @@ socket.on('nameResult', back => {
     data.players = back.players;
     if(back.player == 0) data.leader = true;
   }
-  else methods.snackbar('That name is already taken');
+  else{
+    if(data.name.length < 4) methods.snackbar('Name must be at least 4 characters');
+    else methods.snackbar('That name is already taken');
+
+  }
 });
 
 socket.on('newPlayer', name => {
@@ -174,4 +194,9 @@ socket.on('addPixel', _c => {
 socket.on('removePixel', _c => {
   data.pixels.pop(_c);
   document.querySelector(`#x${_c[0]}x${_c[1]}`).style.backgroundColor = 'rgba(255,255,255,0)';
+});
+
+socket.on('end', _data => {
+  data.screen = 'end';
+  methods.animate(_data);
 });

@@ -34,19 +34,33 @@
           <h1 v-for="player in players" class="name">{{player}}</h1>
         </div>
         <md-button class="md-raised md-primary" v-if="leader" @click="startGame()">START</md-button>
+        <span v-if="leader" class="row">
+          <md-switch v-model="leaderIn" name="leader">Leader Plays</md-switch>
+          <md-field class="shortInput">
+            <label>Rounds</label>
+            <md-input v-model="rounds" type="number" class="shortInput"></md-input>
+          </md-field>
+          <md-field class="shortInput">
+            <label>Turn</label>
+            <md-input v-model="turn" type="number" class="shortInput"></md-input>
+          </md-field>
+        </span>
       </div>
       <div v-if="screen == 'observe'" class="fullscreen column">
         <h1 class="topleft">{{drawer}} {{time}}</h1>
         <grid :pixel="doc.clientHeight<doc.clientWidth?doc.clientHeight/55:doc.clientWidth/55"></grid>
       </div>
       <div v-if="screen == 'playing'" class="fullscreen column">
-        <!-- <span :asdf="bindTouch"></span> -->
         <h1 class="topleft">{{time}}</h1>
         <grid :pixel="doc.clientHeight<doc.clientWidth?doc.clientHeight/55:doc.clientWidth/55"></grid>
         <div class="row">
           <h1 @click="tool = 'pencil'">pencil</h1>
           <h1 @click="tool = 'eraser'">eraser</h1>
         </div>
+      </div>
+      <div v-if="screen == 'end'" class="fullscreen column">
+        <span class="md-card-header">{{author}}</span>
+        <grid :pixel="doc.clientHeight<doc.clientWidth?doc.clientHeight/55:doc.clientWidth/55"></grid>
       </div>
       <md-snackbar :md-duration="Infinity" :md-active.sync="showSnack">
         <span>{{snackMessage}}</span>

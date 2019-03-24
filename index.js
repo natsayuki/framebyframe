@@ -32,7 +32,7 @@ io.on('connection', socket => {
   socket.on('name', data => {
     let pass = true;
     Object.values(rooms[players[socket.id]]['players']).forEach(value => {
-      if(value['name'] == data) pass = false;
+      if(value['name'] == data || data.length<4) pass = false;
     });
     if(pass){
       rooms[players[socket.id]]['players'][socket.id]['name'] = data;
@@ -54,23 +54,29 @@ io.on('connection', socket => {
     players[socket.id] = data;
   });
   socket.on('disconnect', data => {
-    if(rooms[players[socket.id]] && rooms[players[socket.id]]['players'][socket.id]['name'] != null){
-      if(rooms[players[socket.id]]['players'][socket.id]['nums'] == 0) io.to(players[socket.id]).emit('reload', {});
-      io.to(players[socket.id]).emit('disconnected', rooms[players[socket.id]]['players'][socket.id]['name']);
-      delete rooms[players[socket.id]]['players'][socket.id];
-      if(Object.keys(rooms[players[socket.id]]['players']).length == 0) delete rooms[players[socket.id]];
+    if(rooms[players[socket.id]]){
+      if(rooms[players[socket.id]]['players'][socket.id] != undefined && rooms[players[socket.id]]['players'][socket.id]['name'] != null){
+        if(rooms[players[socket.id]]['players'][socket.id]['num'] == 0) io.to(players[socket.id]).emit('reload', {});
+        io.to(players[socket.id]).emit('disconnected', rooms[players[socket.id]]['players'][socket.id]['name']);
+        delete rooms[players[socket.id]]['players'][socket.id];
+        if(Object.keys(rooms[players[socket.id]]['players']).length == 0){
+          if(rooms[players[socket.id]]['running']) clearInterval(rooms[players[socket.id]]['tick']);
+          delete rooms[players[socket.id]];
+        }
+      }
     }
   });
   socket.on('startGame', data => {
     if(rooms[players[socket.id]]['players'][socket.id]['num'] == 0){
       console.log('were in');
-      const leaderIn = false;
-      _players = rooms[players[socket.id]]['players']
-      rooms[players[socket.id]]['startTime'] = 30;
+      const leaderIn = data.leaderIn;
+      _players = rooms[players[socket.id]]['players'];
+      rooms[players[socket.id]]['startTime'] = parseInt(data.turn);
       rooms[players[socket.id]]['order'] = [];
       rooms[players[socket.id]]['orderID'] = [];
       rooms[players[socket.id]]['pixels'] = [];
-      rooms[players[socket.id]]['rounds'] = 3;
+      rooms[players[socket.id]]['rounds'] = parseInt(data.rounds);
+      rooms[players[socket.id]]['round'] = 0;
       rooms[players[socket.id]]['frames'] = [];
       Object.keys(_players).forEach((_player, index) => {
         if((leaderIn && index == 0) || index > 0){
@@ -105,20 +111,26 @@ function tick(room,socket){
 function nextTurn(room,socket){
   if(rooms[room]['tick'] != undefined) clearInterval(rooms[room]['tick']);
   rooms[room]['turn'] = (rooms[room]['turn'] + 1) % rooms[room]['order'].length;
+  if(rooms[room]['turn'] == 0) rooms[room]['round']++;
   rooms[room]['running'] = true;
-  rooms[room]['time'] = rooms[room]['startTime']+1;
+  rooms[room]['time'] = parseInt(rooms[room]['startTime'])+1;
   if(rooms[room]['pixels'] != []){
     rooms[room]['frames'].push({
-      name: rooms[room]['players'][socket.id],
+      name: rooms[room]['order'][rooms[room]['turn']],
       frames: rooms[room]['pixels'],
     });
     rooms[room]['pixels'] = [];
   }
-  io.to(players[socket.id]).emit('observe', {name: rooms[room]['order'][rooms[room]['turn']], observe: true});
-  const _id =rooms[room]['orderID'][rooms[room]['turn']]
-  console.log(_id);
-  io.to(`${rooms[room]['orderID'][rooms[room]['turn']]}`).emit('turn', {});
-  rooms[room]['tick'] = setInterval(()=>{tick(room,socket)},1000);
+  if(rooms[room]['round'] != rooms[room]['rounds'] +1){
+    io.to(players[socket.id]).emit('observe', {name: rooms[room]['order'][rooms[room]['turn']], observe: true});
+    const _id =rooms[room]['orderID'][rooms[room]['turn']]
+    io.to(`${rooms[room]['orderID'][rooms[room]['turn']]}`).emit('turn', {});
+    rooms[room]['tick'] = setInterval(()=>{tick(room,socket)},1000);
+  }
+  else{
+    io.to(players[socket.id]).emit('end', rooms[room]['frames']);
+    delete rooms[players[socket.id]];
+  }
 }
 
 app.use(express.static('static'));

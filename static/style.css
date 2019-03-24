@@ -3,6 +3,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  text-align: center;
 }
 .row{
   flex-direction: row !important;
@@ -36,4 +37,9 @@
 }
 .grid{
   border: 1px solid black;
+}
+.shortInput{
+  width: 3rem !important;
+  margin-top: -.001rem !important;
+  display: block !important;
 }
