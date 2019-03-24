@@ -38,7 +38,11 @@ io.on('connection', socket => {
       rooms[players[socket.id]]['players'][socket.id]['name'] = data;
       io.to(players[socket.id]).emit('newPlayer', data);
       const temp = Object.values(rooms[players[socket.id]]['players']).map(player => player.name);
-      socket.emit('nameResult', {good: true, players: temp, player: 0});
+      socket.emit('nameResult', {
+        good: true,
+        players: temp,
+        player: rooms[players[socket.id]]['players'][socket.id]['num'],
+      });
     }
     else{
       socket.emit('nameResult', {good: false});
@@ -58,23 +62,63 @@ io.on('connection', socket => {
     }
   });
   socket.on('startGame', data => {
-    if(rooms[players[socket.id]]['players'][socket.id]['player'] == 0){
+    if(rooms[players[socket.id]]['players'][socket.id]['num'] == 0){
+      console.log('were in');
       const leaderIn = false;
-      io.to(players[socket.id]).emit('observe', {name: rooms[players[socket.id]]['players'][socket.id]['name'], observe: true});
-      players = rooms[players[socket.id]]['players']
+      _players = rooms[players[socket.id]]['players']
+      rooms[players[socket.id]]['startTime'] = 30;
       rooms[players[socket.id]]['order'] = [];
-      Object.keys(players).forEach((_player, index) => {
-        if(leaderIn && index == 0) rooms[players[socket.id]]['order'].push(_player);
-        else if(index > 0) rooms[players[socket.id]]['order'].push(_player);
+      rooms[players[socket.id]]['orderID'] = [];
+      rooms[players[socket.id]]['pixels'] = [];
+      rooms[players[socket.id]]['rounds'] = 3;
+      rooms[players[socket.id]]['frames'] = [];
+      Object.keys(_players).forEach((_player, index) => {
+        if((leaderIn && index == 0) || index > 0){
+          rooms[players[socket.id]]['order'].push(_players[_player].name);
+          rooms[players[socket.id]]['orderID'].push(_player);
+        }
       });
-      rooms[players[socket.id]]['turn'] = //TOFO
-
+      rooms[players[socket.id]]['turn'] = -1;
+      nextTurn(players[socket.id],socket);
+    }
+  });
+  socket.on('pixelAdd', coord => {
+    if(socket.id == rooms[players[socket.id]]['orderID'][rooms[players[socket.id]]['turn']]){
+      rooms[players[socket.id]]['pixels'].push(coord);
+      io.to(players[socket.id]).emit('addPixel', coord);
+    }
+  });
+  socket.on('pixelRemove', coord => {
+    if(socket.id == rooms[players[socket.id]]['orderID'][rooms[players[socket.id]]['turn']]){
+      rooms[players[socket.id]]['pixels'].pop(coord);
+      io.to(players[socket.id]).emit('removePixel', coord);
     }
   });
 });
 
-function nextTurn(room){
+function tick(room,socket){
+  rooms[room]['time']--;
+  io.to(players[socket.id]).emit('time', rooms[room]['time']);
+  if(rooms[room]['time'] == 0) nextTurn(room,socket);
+}
 
+function nextTurn(room,socket){
+  if(rooms[room]['tick'] != undefined) clearInterval(rooms[room]['tick']);
+  rooms[room]['turn'] = (rooms[room]['turn'] + 1) % rooms[room]['order'].length;
+  rooms[room]['running'] = true;
+  rooms[room]['time'] = rooms[room]['startTime']+1;
+  if(rooms[room]['pixels'] != []){
+    rooms[room]['frames'].push({
+      name: rooms[room]['players'][socket.id],
+      frames: rooms[room]['pixels'],
+    });
+    rooms[room]['pixels'] = [];
+  }
+  io.to(players[socket.id]).emit('observe', {name: rooms[room]['order'][rooms[room]['turn']], observe: true});
+  const _id =rooms[room]['orderID'][rooms[room]['turn']]
+  console.log(_id);
+  io.to(`${rooms[room]['orderID'][rooms[room]['turn']]}`).emit('turn', {});
+  rooms[room]['tick'] = setInterval(()=>{tick(room,socket)},1000);
 }
 
 app.use(express.static('static'));

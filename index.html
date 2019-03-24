@@ -35,11 +35,18 @@
         </div>
         <md-button class="md-raised md-primary" v-if="leader" @click="startGame()">START</md-button>
       </div>
-      <div v-if="screen == 'observing'">
+      <div v-if="screen == 'observe'" class="fullscreen column">
         <h1 class="topleft">{{drawer}} {{time}}</h1>
+        <grid :pixel="doc.clientHeight<doc.clientWidth?doc.clientHeight/55:doc.clientWidth/55"></grid>
       </div>
-      <div v-if="screen == 'playing'">
-
+      <div v-if="screen == 'playing'" class="fullscreen column">
+        <!-- <span :asdf="bindTouch"></span> -->
+        <h1 class="topleft">{{time}}</h1>
+        <grid :pixel="doc.clientHeight<doc.clientWidth?doc.clientHeight/55:doc.clientWidth/55"></grid>
+        <div class="row">
+          <h1 @click="tool = 'pencil'">pencil</h1>
+          <h1 @click="tool = 'eraser'">eraser</h1>
+        </div>
       </div>
       <md-snackbar :md-duration="Infinity" :md-active.sync="showSnack">
         <span>{{snackMessage}}</span>

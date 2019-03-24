@@ -14,6 +14,10 @@ let data ={
   turn: false,
   drawer: '',
   time: null,
+  doc: document.body,
+  tool: 'pencil',
+  pixels: [],
+  clicking: false,
 }
 
 let methods = {
@@ -40,6 +44,17 @@ let methods = {
   },
   startGame(){
     socket.emit('startGame', {});
+  },
+  handlePixel(coord,type){
+    if(data.turn && (data.clicking || type=='c') && data.tool == 'pencil') socket.emit('pixelAdd',coord);
+    if(data.turn && (data.clicking || type=='c') && data.tool == 'eraser') socket.emit('pixelRemove',coord);
+  },
+  clearGrid(){
+    for(let x=1;x<=50;x++){
+      for(let y=1;y<=50;y++){
+        document.querySelector(`#x${x}x${y}`).style.backgroundColor = 'rgba(255,255,255,0)';
+      }
+    }
   }
 }
 
@@ -47,11 +62,62 @@ let computed = {
 
 }
 
+Vue.component('grid', {
+  props: [
+    'pixel',
+  ],
+  data: () => {return{
+    width: 50,
+    height: 50,
+  }},
+  methods: {
+    handlePixel: methods.handlePixel,
+  },
+  template:`
+  <div class="row">
+    <div class="row grid"  :style="'width:'+pixel*width+'px !important'">
+      <div class="column" v-for="w in width" :key="w">
+        <div class="pixel" v-for="h in height" :key="h" :style="'width:'+pixel+'px;height:'+pixel+'px;'"
+        @click="handlePixel([w,h],'c')" @mouseover="handlePixel([w,h],'m')"
+        :id="'x'+w+'x'+h"></div>
+      </div>
+    </div>
+  </div>
+  `
+});
+
 const vm = new Vue({
   el: '#app',
   data: data,
   methods: methods,
   computed: computed
+});
+
+document.addEventListener('mousedown', e => {
+  data.clicking = true;
+});
+
+document.addEventListener('mouseup', e => {
+  data.clicking = false;
+});
+
+document.addEventListener('touchstart', e => {
+  data.clicking = true;
+});
+
+document.addEventListener('touchend', e => {
+  data.clicking = false;
+});
+
+document.addEventListener('touchmove', e => {
+  e.preventDefault();
+  const _x = e.changedTouches[0].clientX;
+  const _y = e.changedTouches[0].clientY;
+  const elem = document.elementFromPoint(_x,_y);
+  if(elem != undefined && elem.id.indexOf('x') != -1){
+    const temp = elem.id.split('x');
+    methods.handlePixel([temp[1],temp[2]],'t');
+  }
 });
 
 if(location.href.indexOf('/room') != -1){
@@ -83,12 +149,29 @@ socket.on('reload', data => {
 });
 
 socket.on('observe', _data => {
-  data.screen == 'observe';
+  data.screen = 'observe';
   data.turn = false;
   data.drawer = _data.name;
+  methods.clearGrid();
 });
 
 socket.on('turn', _data => {
-  data.screen == 'playing';
+  console.log(_data);
+  data.screen = 'playing';
   data.turn = true;
-})
+  methods.clearGrid();
+});
+
+socket.on('time', _time => {
+  data.time = _time;
+});
+
+socket.on('addPixel', _c => {
+  data.pixels.push(_c);
+  document.querySelector(`#x${_c[0]}x${_c[1]}`).style.backgroundColor = 'black';
+});
+
+socket.on('removePixel', _c => {
+  data.pixels.pop(_c);
+  document.querySelector(`#x${_c[0]}x${_c[1]}`).style.backgroundColor = 'rgba(255,255,255,0)';
+});
