@@ -43,3 +43,45 @@
   margin-top: -.001rem !important;
   display: block !important;
 }
+.corner{
+  width: 10rem;
+  height: 10rem;
+  background-color: cornflowerblue;
+  display: inline-block;
+  animation: cornerMorph 5s infinite;
+  margin: -1rem;
+  border-radius: 0px;
+}
+
+/* loading icon */
+
+.wrapper{
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  flex-direction: column;
+  animation: spin 5s infinite;
+}
+@keyframes cornerMorph{
+  0%{
+    margin: -1rem;
+    border-radius: 0px;
+  }
+  30%{
+    margin: 3rem;
+    border-radius: 50%;
+  }
+  60%{
+    margin: 3rem;
+    border-radius: 50%;
+  }
+}
+@keyframes spin{
+  0%{transform: rotate(0deg);}
+  100%{transform: rotate(1080deg);}
+}

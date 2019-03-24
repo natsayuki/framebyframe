@@ -5,7 +5,7 @@ const socket = io();
 
 let data ={
   screen: "home",
-  roomCode: null,
+  roomCode: "",
   name: "",
   showSnack: false,
   snackMessage: '',
@@ -28,6 +28,9 @@ let methods = {
   createRoom(){
     const key = this.random(10000000, 99999999);
     location.href += `room?key=${key}`;
+  },
+  joinRoom(){
+    location.href += 'room?key=' + data.roomCode;
   },
   random(min, max){
     return Math.floor(Math.random() * max) + min

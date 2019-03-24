@@ -17,8 +17,8 @@
         <md-button class="md-accent topleft" @click="createRoom()">CREATE ROOM</md-button>
         <form class="column">
           <h1>Room Code</h1>
-          <input class="biginput" maxlength="8" />
-          <md-button class="md-raised md-primary">JOIN</md-button>
+          <input class="biginput" v-model="roomCode" maxlength="8" />
+          <md-button class="md-raised md-primary" @click="joinRoom">JOIN</md-button>
         </form>
       </div>
       <div v-if="screen == 'name'" class="fullscreen column">
@@ -61,6 +61,18 @@
       <div v-if="screen == 'end'" class="fullscreen column">
         <span class="md-card-header">{{author}}</span>
         <grid :pixel="doc.clientHeight<doc.clientWidth?doc.clientHeight/55:doc.clientWidth/55"></grid>
+      </div>
+      <div v-if="false" class="fullscreen column">
+        <div id="cornerWrapper" class="wrapper">
+          <div class="rowWrapper">
+            <div class="corner"></div>
+            <div class="corner"></div>
+          </div>
+          <div class="rowWrapper">
+            <div class="corner"></div>
+            <div class="corner"></div>
+          </div>
+        </div>
       </div>
       <md-snackbar :md-duration="Infinity" :md-active.sync="showSnack">
         <span>{{snackMessage}}</span>
