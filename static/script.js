@@ -22,6 +22,11 @@ let data ={
   leaderIn: false,
   rounds: 3,
   turn: 30,
+  prompt: "",
+}
+
+function prompt(prompt){
+  socket.emit('newPrompt', {"prompt": prompt});
 }
 
 let methods = {
@@ -74,6 +79,9 @@ let methods = {
       });
       time++;
     }, 200);
+  },
+  newPrompt(){
+    socket.emit('newPrompt', {});
   },
 }
 
@@ -149,6 +157,7 @@ socket.on('nameResult', back => {
   if(back.good){
     data.screen = 'lobby';
     data.players = back.players;
+    data.prompt = back.prompt;
     if(back.player == 0) data.leader = true;
   }
   else{
@@ -202,4 +211,8 @@ socket.on('removePixel', _c => {
 socket.on('end', _data => {
   data.screen = 'end';
   methods.animate(_data);
+});
+
+socket.on('newPrompt', _prompt => {
+  data.prompt = _prompt;
 });

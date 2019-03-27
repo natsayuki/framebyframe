@@ -3,6 +3,7 @@ const express = require('express');
 const http = require('http');
 const path = require('path');
 const socketio = require('socket.io');
+const Sentencer = require('sentencer');
 
 const app = express();
 const server = http.Server(app);
@@ -10,6 +11,14 @@ const io = socketio(server);
 
 let rooms = {};
 let players = {};
+
+function random(min, max) {
+  return Math.floor(Math.random() * (max - min + 1) ) + min;
+}
+
+function generatePrompt(){
+  return (random(0,1) == 0 ? Sentencer.make("{{an_adjective}} {{noun}}."):Sentencer.make("{{adjective}} {{nouns}}."));
+}
 
 app.use( bodyParser.json() );
 app.use(bodyParser.urlencoded({
@@ -22,7 +31,8 @@ app.get('/', (req, res) => {
 
 app.get('/room', (req, res) => {
   if(Object.keys(rooms).indexOf(`${req.query.key}`) == -1){
-    rooms[req.query.key] = {players: {}};
+    rooms[req.query.key] = {players: {}, prompt: generatePrompt()};
+
   }
   res.sendFile(path.resolve('index.html'));
 });
@@ -42,6 +52,7 @@ io.on('connection', socket => {
         good: true,
         players: temp,
         player: rooms[players[socket.id]]['players'][socket.id]['num'],
+        prompt: rooms[players[socket.id]]['prompt'],
       });
     }
     else{
@@ -98,6 +109,13 @@ io.on('connection', socket => {
     if(socket.id == rooms[players[socket.id]]['orderID'][rooms[players[socket.id]]['turn']]){
       rooms[players[socket.id]]['pixels'].pop(coord);
       io.to(players[socket.id]).emit('removePixel', coord);
+    }
+  });
+  socket.on('newPrompt', data => {
+    if(rooms[players[socket.id]]['players'][socket.id]['num'] == 0){
+      if(Object.keys(data).indexOf('prompt') != -1) rooms[players[socket.id]]['prompt'] = data['prompt'];
+      else rooms[players[socket.id]]['prompt'] = generatePrompt();
+      io.to(players[socket.id]).emit('newPrompt', rooms[players[socket.id]]['prompt']);      
     }
   });
 });

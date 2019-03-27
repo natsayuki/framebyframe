@@ -2,7 +2,7 @@
 <html lang="en" dir="ltr">
   <head>
     <meta charset="utf-8">
-    <title>Fram By Frame</title>
+    <title>Frame By Frame</title>
     <link rel="stylesheet" href="/style.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.1/css/all.css" integrity="sha384-5sAR7xN1Nv6T6+dT2mhtzEpVJvfS3NScPQTrOxhwjIuvcA67KV2R5Jz6kr4abQsz" crossorigin="anonymous">
@@ -14,6 +14,7 @@
   <body>
     <div id="app">
       <div v-if="screen == 'home'" class="fullscreen column">
+        <a href="https://github.com/the42ndturtle/framebyframe" class="topright" target="_blank">source code</a>
         <md-button class="md-accent topleft" @click="createRoom()">CREATE ROOM</md-button>
         <form class="column">
           <h1>Room Code</h1>
@@ -33,6 +34,10 @@
         <div class="list row">
           <h1 v-for="player in players" class="name">{{player}}</h1>
         </div>
+        <div class="row">
+          <h1>Your task is to animate {{prompt}}</h1>
+          <md-button v-if="leader" class="md-accent" @click="newPrompt()">RE-ROLL</md-button>
+        </div>
         <md-button class="md-raised md-primary" v-if="leader" @click="startGame()">START</md-button>
         <span v-if="leader" class="row">
           <md-switch v-model="leaderIn" name="leader">Leader Plays</md-switch>
@@ -48,14 +53,14 @@
       </div>
       <div v-if="screen == 'observe'" class="fullscreen column">
         <h1 class="topleft">{{drawer}} {{time}}</h1>
-        <grid :pixel="doc.clientHeight<doc.clientWidth?doc.clientHeight/55:doc.clientWidth/55"></grid>
+        <grid :pixel="doc.clientHeight<doc.clientWidth?doc.clientHeight/60:doc.clientWidth/55"></grid>
       </div>
       <div v-if="screen == 'playing'" class="fullscreen column">
         <h1 class="topleft">{{time}}</h1>
-        <grid :pixel="doc.clientHeight<doc.clientWidth?doc.clientHeight/55:doc.clientWidth/55"></grid>
-        <div class="row">
-          <h1 @click="tool = 'pencil'">pencil</h1>
-          <h1 @click="tool = 'eraser'">eraser</h1>
+        <grid :pixel="doc.clientHeight<doc.clientWidth?doc.clientHeight/60:doc.clientWidth/55"></grid>
+        <div class="row iconRow">
+          <i :class="(tool=='pencil'?'selected':'')+' fas fa-pencil-alt icon'" @click="tool = 'pencil'"></i>
+          <i :class="(tool=='eraser'?'selected':'')+' fas fa-eraser icon'" @click="tool = 'eraser'"></i>
         </div>
       </div>
       <div v-if="screen == 'end'" class="fullscreen column">

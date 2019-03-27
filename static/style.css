@@ -21,11 +21,15 @@
   margin: 1rem;
   text-align: center;
 }
-.topleft{
+.topleft, .topright{
   position: fixed !important;
   top: 1rem;
-  left: 2rem;
+  right: 2rem;
   transform: scale(1.5);
+}
+.topleft{
+  right: 0rem !important;
+  left: 2rem;
 }
 .list{
   flex-wrap: wrap;
@@ -51,6 +55,20 @@
   animation: cornerMorph 5s infinite;
   margin: -1rem;
   border-radius: 0px;
+}
+.icon{
+  font-size: 3rem;
+  color: black;
+  transition: all .5s;
+}
+.selected{
+  font-size: 3.5rem;
+  color: blue;
+  transition: all .5s;
+}
+.iconRow{
+  margin-top: .2rem;
+  height: 3.5rem !important;
 }
 
 /* loading icon */
