@@ -58,8 +58,10 @@ let methods = {
     socket.emit('startGame', {leaderIn: data.leaderIn, rounds: data.rounds, turn: data.turn});
   },
   handlePixel(coord,type){
-    if(data.turn && (data.clicking || type=='c') && data.tool == 'pencil') socket.emit('pixelAdd',coord);
-    if(data.turn && (data.clicking || type=='c') && data.tool == 'eraser') socket.emit('pixelRemove',coord);
+    if(data.screen == 'playing'){
+      if(data.turn && (data.clicking || type=='c') && data.tool == 'pencil') socket.emit('pixelAdd',coord);
+      if(data.turn && (data.clicking || type=='c') && data.tool == 'eraser') socket.emit('pixelRemove',coord);
+    }
   },
   clearGrid(){
     for(let x=1;x<=50;x++){
@@ -83,6 +85,9 @@ let methods = {
   newPrompt(){
     socket.emit('newPrompt', {});
   },
+  newTurn(){
+    socket.emit('newTurn', {});
+  }
 }
 
 let computed = {

@@ -23,12 +23,13 @@
 }
 .topleft, .topright{
   position: fixed !important;
-  top: 1rem;
-  right: 2rem;
   transform: scale(1.5);
+  top: 1rem;
+}
+.topright{
+  right: 2rem;
 }
 .topleft{
-  right: 0rem !important;
   left: 2rem;
 }
 .list{
@@ -69,6 +70,18 @@
 .iconRow{
   margin-top: .2rem;
   height: 3.5rem !important;
+}
+.mobileBreak{
+  display: none;
+}
+
+@media (max-width: 800px){
+  .topleft, .topright{
+    transform: scale(1);
+  }
+  .mobileBreak{
+    display: block !important;
+  }
 }
 
 /* loading icon */

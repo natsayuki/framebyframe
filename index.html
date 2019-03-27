@@ -34,10 +34,8 @@
         <div class="list row">
           <h1 v-for="player in players" class="name">{{player}}</h1>
         </div>
-        <div class="row">
-          <h1>Your task is to animate {{prompt}}</h1>
-          <md-button v-if="leader" class="md-accent" @click="newPrompt()">RE-ROLL</md-button>
-        </div>
+        <h1>Your task is to animate {{prompt}}</h1>
+        <md-button v-if="leader" class="md-accent" @click="newPrompt()">RE-ROLL</md-button>
         <md-button class="md-raised md-primary" v-if="leader" @click="startGame()">START</md-button>
         <span v-if="leader" class="row">
           <md-switch v-model="leaderIn" name="leader">Leader Plays</md-switch>
@@ -62,6 +60,7 @@
           <i :class="(tool=='pencil'?'selected':'')+' fas fa-pencil-alt icon'" @click="tool = 'pencil'"></i>
           <i :class="(tool=='eraser'?'selected':'')+' fas fa-eraser icon'" @click="tool = 'eraser'"></i>
         </div>
+        <md-button class="md-primary md-raised" @click="newTurn()">DONE</md-button>
       </div>
       <div v-if="screen == 'end'" class="fullscreen column">
         <span class="md-card-header">{{author}}</span>

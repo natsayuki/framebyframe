@@ -40,83 +40,112 @@ app.get('/room', (req, res) => {
 io.on('connection', socket => {
   console.log('new connection');
   socket.on('name', data => {
-    let pass = true;
-    Object.values(rooms[players[socket.id]]['players']).forEach(value => {
-      if(value['name'] == data || data.length<4) pass = false;
-    });
-    if(pass){
-      rooms[players[socket.id]]['players'][socket.id]['name'] = data;
-      io.to(players[socket.id]).emit('newPlayer', data);
-      const temp = Object.values(rooms[players[socket.id]]['players']).map(player => player.name);
-      socket.emit('nameResult', {
-        good: true,
-        players: temp,
-        player: rooms[players[socket.id]]['players'][socket.id]['num'],
-        prompt: rooms[players[socket.id]]['prompt'],
+    try{
+      let pass = true;
+      Object.values(rooms[players[socket.id]]['players']).forEach(value => {
+        if(value['name'] == data || data.length<4) pass = false;
       });
+      if(pass){
+        rooms[players[socket.id]]['players'][socket.id]['name'] = data;
+        io.to(players[socket.id]).emit('newPlayer', data);
+        const temp = Object.values(rooms[players[socket.id]]['players']).map(player => player.name);
+        socket.emit('nameResult', {
+          good: true,
+          players: temp,
+          player: rooms[players[socket.id]]['players'][socket.id]['num'],
+          prompt: rooms[players[socket.id]]['prompt'],
+        });
+      }
+      else{
+        socket.emit('nameResult', {good: false});
+      }
     }
-    else{
-      socket.emit('nameResult', {good: false});
-    }
+    catch(err){}
   });
   socket.on('room', data => {
-    socket.join(data);
-    rooms[data]['players'][socket.id] = {name: null, num: Object.keys(rooms[data]['players']).length};
-    players[socket.id] = data;
+    try{
+      socket.join(data);
+      rooms[data]['players'][socket.id] = {name: null, num: Object.keys(rooms[data]['players']).length};
+      players[socket.id] = data;
+    }
+    catch(err){}
   });
   socket.on('disconnect', data => {
-    if(rooms[players[socket.id]]){
-      if(rooms[players[socket.id]]['players'][socket.id] != undefined && rooms[players[socket.id]]['players'][socket.id]['name'] != null){
-        if(rooms[players[socket.id]]['players'][socket.id]['num'] == 0) io.to(players[socket.id]).emit('reload', {});
-        io.to(players[socket.id]).emit('disconnected', rooms[players[socket.id]]['players'][socket.id]['name']);
-        delete rooms[players[socket.id]]['players'][socket.id];
-        if(Object.keys(rooms[players[socket.id]]['players']).length == 0){
-          if(rooms[players[socket.id]]['running']) clearInterval(rooms[players[socket.id]]['tick']);
-          delete rooms[players[socket.id]];
+    try{
+      if(rooms[players[socket.id]]){
+        if(rooms[players[socket.id]]['players'][socket.id] != undefined && rooms[players[socket.id]]['players'][socket.id]['name'] != null){
+          if(rooms[players[socket.id]]['players'][socket.id]['num'] == 0) io.to(players[socket.id]).emit('reload', {});
+          io.to(players[socket.id]).emit('disconnected', rooms[players[socket.id]]['players'][socket.id]['name']);
+          delete rooms[players[socket.id]]['players'][socket.id];
+          if(Object.keys(rooms[players[socket.id]]['players']).length == 0){
+            if(rooms[players[socket.id]]['running']) clearInterval(rooms[players[socket.id]]['tick']);
+            delete rooms[players[socket.id]];
+          }
         }
       }
     }
+    catch(err){}
   });
   socket.on('startGame', data => {
-    if(rooms[players[socket.id]]['players'][socket.id]['num'] == 0){
-      console.log('were in');
-      const leaderIn = data.leaderIn;
-      _players = rooms[players[socket.id]]['players'];
-      rooms[players[socket.id]]['startTime'] = parseInt(data.turn);
-      rooms[players[socket.id]]['order'] = [];
-      rooms[players[socket.id]]['orderID'] = [];
-      rooms[players[socket.id]]['pixels'] = [];
-      rooms[players[socket.id]]['rounds'] = parseInt(data.rounds);
-      rooms[players[socket.id]]['round'] = 0;
-      rooms[players[socket.id]]['frames'] = [];
-      Object.keys(_players).forEach((_player, index) => {
-        if((leaderIn && index == 0) || index > 0){
-          rooms[players[socket.id]]['order'].push(_players[_player].name);
-          rooms[players[socket.id]]['orderID'].push(_player);
-        }
-      });
-      rooms[players[socket.id]]['turn'] = -1;
-      nextTurn(players[socket.id],socket);
+    try{
+      if(rooms[players[socket.id]]['players'][socket.id]['num'] == 0){
+        const leaderIn = data.leaderIn;
+        _players = rooms[players[socket.id]]['players'];
+        rooms[players[socket.id]]['startTime'] = parseInt(data.turn);
+        rooms[players[socket.id]]['order'] = [];
+        rooms[players[socket.id]]['orderID'] = [];
+        rooms[players[socket.id]]['pixels'] = [];
+        rooms[players[socket.id]]['rounds'] = parseInt(data.rounds);
+        rooms[players[socket.id]]['round'] = 0;
+        rooms[players[socket.id]]['frames'] = [];
+        Object.keys(_players).forEach((_player, index) => {
+          if((leaderIn && index == 0) || index > 0){
+            rooms[players[socket.id]]['order'].push(_players[_player].name);
+            rooms[players[socket.id]]['orderID'].push(_player);
+          }
+        });
+        rooms[players[socket.id]]['turn'] = -1;
+        nextTurn(players[socket.id],socket);
+      }
     }
+    catch(err){}
   });
   socket.on('pixelAdd', coord => {
-    if(socket.id == rooms[players[socket.id]]['orderID'][rooms[players[socket.id]]['turn']]){
-      rooms[players[socket.id]]['pixels'].push(coord);
-      io.to(players[socket.id]).emit('addPixel', coord);
+    try{
+      if(socket.id == rooms[players[socket.id]]['orderID'][rooms[players[socket.id]]['turn']]){
+        rooms[players[socket.id]]['pixels'].push(coord);
+        io.to(players[socket.id]).emit('addPixel', coord);
+      }
     }
+    catch(err){}
   });
   socket.on('pixelRemove', coord => {
-    if(socket.id == rooms[players[socket.id]]['orderID'][rooms[players[socket.id]]['turn']]){
-      rooms[players[socket.id]]['pixels'].pop(coord);
-      io.to(players[socket.id]).emit('removePixel', coord);
+    try{
+      if(socket.id == rooms[players[socket.id]]['orderID'][rooms[players[socket.id]]['turn']]){
+        rooms[players[socket.id]]['pixels'].pop(coord);
+        io.to(players[socket.id]).emit('removePixel', coord);
+      }
     }
+    catch(err){}
   });
   socket.on('newPrompt', data => {
-    if(rooms[players[socket.id]]['players'][socket.id]['num'] == 0){
-      if(Object.keys(data).indexOf('prompt') != -1) rooms[players[socket.id]]['prompt'] = data['prompt'];
-      else rooms[players[socket.id]]['prompt'] = generatePrompt();
-      io.to(players[socket.id]).emit('newPrompt', rooms[players[socket.id]]['prompt']);      
+    try{
+      if(rooms[players[socket.id]]['players'][socket.id]['num'] == 0){
+        if(Object.keys(data).indexOf('prompt') != -1) rooms[players[socket.id]]['prompt'] = data['prompt'];
+        else rooms[players[socket.id]]['prompt'] = generatePrompt();
+        io.to(players[socket.id]).emit('newPrompt', rooms[players[socket.id]]['prompt']);
+      }
     }
+    catch(err){}
+  });
+  socket.on('newTurn', data => {
+    try{
+      if(socket.id == rooms[players[socket.id]]['orderID'][rooms[players[socket.id]]['turn']]){
+        console.log(data);
+        nextTurn(players[socket.id],socket);
+      }
+    }
+    catch(err){}
   });
 });
 
