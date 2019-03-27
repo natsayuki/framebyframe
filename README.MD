@@ -18,7 +18,7 @@
   * If you want to have a custom room code, change the key parameter in the URL in the room subdirectory to what you desire
     * Eg. https://fbfgame.herokuapp.com/room?key=mycustomkey
   * If you want to have a custom prompt for the animation open a console in your browser and type in the following with your prompt where it says "prompt here"
-    * '''javascript prompt('prompt here')'''
+    * 'prompt("prompt here")'
     * I might actually implement this in the lobby later if I care enough to and I remember
     * Also this doesn't work on mobile for obvious reasons
 
